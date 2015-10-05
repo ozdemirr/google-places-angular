@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html ng-app="geoparser">
+<head lang="en">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="assets/css/bootstrap.css">
+    <link rel="stylesheet" href="assets/css/loading-bar.css">
+    <link rel="stylesheet" href="assets/css/angular-notify.min.css">
+
+    <link rel="stylesheet" href="assets/css/app.css">
+
+    <script src="assets/js/angular.min.js"></script>
+    <script src="assets/js/angular-animate.js"></script>
+    <script src="assets/js/ui-bootstrap-tpls-0.13.4.min.js"></script>
+    <script src="assets/js/loading-bar.js"></script>
+    <script src="assets/js/angular-notify.min.js"></script>
+    <script src="assets/js/lodash.min.js"></script>
+    <script src="assets/js/angular-simple-logger.min.js"></script>
+    <script src="assets/js/angular-google-maps.min.js"></script>
+    <script src="assets/js/angular-sanitize.min.js"></script>
+    <script src="assets/js/ng-csv.min.js"></script>
+    <script src='https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=false&libraries=places'></script>
+
+    <script src="app.js"></script>
+
+    <script src="modules/index/index.js"></script>
+
+    <script src="modules/shared/shared.js"></script>
+    <script src="modules/shared/shared.service.js"></script>
+
+    <title>Google Places</title>
+</head>
+
+<body ng-controller="indexController">
+
+<div class="container">
+
+    <div class="col-md-12">
+
+            <tabset>
+                <tab heading="Single Address" select="tabsData.tab = 1;removeMap()">
+
+                    <div class="form-group">
+                        <label>Address: </label>
+                        <input type="text" class="form-control" ng-model="address.single">
+                    </div>
+
+                    <div class="form-group">
+                        <button type="button" class="btn btn-success" ng-click="getSingleAddress()">Get</button>
+                    </div>
+
+                    <div ng-if="singleResults.length > 0">
+
+                        <div class="row">
+
+                            <div class="col-md-3" ng-repeat="result in singleResults">
+                                <div class="thumbnail">
+                                    <img ng-src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{result.photos.photo_reference}}&key={{apiKey}}" ng-if="result.photos">
+                                    <div class="caption">
+                                        <h3>{{result.name}}</h3>
+                                        <p>{{result.formatted_address}}</p>
+                                        <p>latitude,longitude : {{result.geometry.location.lat}}, {{result.geometry.location.lng}}</p>
+                                        <p><a ng-click="showOnMap(result.geometry.location.lat,result.geometry.location.lng)" class="btn btn-primary" role="button">Harita' da Göster</a></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </tab>
+
+                <tab heading="Multiply Address" select="tabsData.tab = 2;removeMap()">
+
+                    <div class="form-group">
+                        <label>Address:</label>
+                        <textarea class="form-control" rows="5" ng-model="address.multiply"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-inline"><input type="checkbox" ng-model="multiplyResultsListing">Results should be listed?</label>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="button" class="btn btn-success" ng-click="getMultiplyAddress()">Get</button>
+                    </div>
+
+                    <div class="form-group" ng-show="multiplyResults[0]">
+                        <button type="button" class="btn btn-info" ng-csv="multiplyAddressesJsonData" field-separator=","
+                                filename="adresler.csv" csv-header="['adres_ismi', 'ilk_sonuc', 'alternatif_sonuc']">CSV' yi İndir</button>
+                    </div>
+
+                    <div class="row" ng-repeat="resultLine in multiplyResults" ng-if="multiplyResultsListing">
+
+                        <h1>Results for "{{multiplyAddressesArray[$index]}}"</h1>
+
+                        <div class="col-md-3" ng-repeat="result in resultLine">
+                            <div class="thumbnail">
+                                <img ng-src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{result.photos.photo_reference}}&key=AIzaSyB1rXEfPhdPpDuuoUb2pULI1RLKDfrC928" ng-if="result.photos">
+                                <div class="caption">
+                                    <h3>{{result.name}}</h3>
+                                    <p>{{result.formatted_address}}</p>
+                                    <p>latitude,longitude : {{result.geometry.location.lat}}, {{result.geometry.location.lng}}</p>
+                                    <p><a ng-click="showOnMap(result.geometry.location.lat,result.geometry.location.lng)" class="btn btn-primary" role="button">Show on Map</a></p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </tab>
+
+
+                <tab heading="From CSV File" select="tabsData.tab = 3;removeMap()">
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">CSV Dosyası</label>
+                        <div class="col-sm-4">
+                            <input type="file" class="form-control" file-change="handler($event,files)" ng-model="MyFiles">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-inline"><input type="checkbox" ng-model="csvResultsListing">Results should be listed?</label>
+                    </div>
+
+                    <div class="form-group" ng-show="csvResults[0]">
+                        <button type="button" class="btn btn-info" ng-csv="csvAddressesJsonData" field-separator=","
+                                filename="fromCSV.csv" csv-header="['address', 'first_result', 'second_result']">Download CSV</button>
+                    </div>
+
+                    <div class="row" ng-repeat="resultLine in csvResults" ng-if="csvResultsListing">
+
+                        <div class="col-md-3" ng-repeat="result in resultLine">
+                            <div class="thumbnail">
+                                <img ng-src="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={{result.photos.photo_reference}}&key=AIzaSyB1rXEfPhdPpDuuoUb2pULI1RLKDfrC928" ng-if="result.photos">
+                                <div class="caption">
+                                    <h3>{{result.name}}</h3>
+                                    <p>{{result.formatted_address}}</p>
+                                    <p>latitude,longitude : {{result.geometry.location.lat}}, {{result.geometry.location.lng}}</p>
+                                    <p><a ng-click="showOnMap(result.geometry.location.lat,result.geometry.location.lng)" class="btn btn-primary" role="button">Show on Map</a></p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </tab>
+
+            </tabset>
+
+    </div>
+
+</div>
+
+<div id="map_canvas" ng-if="showMap">
+
+    <ui-gmap-google-map center="map.center" zoom="map.zoom" options="options">
+
+        <ui-gmap-marker coords="marker.coords" options="marker.options" events="marker.events" idkey="marker.id">
+        </ui-gmap-marker>
+
+    </ui-gmap-google-map>
+
+
+</div>
+
+</body>
+</html>
