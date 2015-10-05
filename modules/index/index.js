@@ -44,15 +44,15 @@ index.controller('indexController', ['$scope', 'sharedService', 'notify', '$root
                             $scope.foursquareSingleResults[key].imageLink = images[0].prefix + "300x300" + images[0].suffix;
 
 
-                    }, function(){
+                        }, function(){
 
-                    })
+                        })
 
                 });
 
 
 
-        }, function(){
+            }, function(){
                 notify('no result');
             })
 
@@ -153,7 +153,7 @@ index.controller('indexController', ['$scope', 'sharedService', 'notify', '$root
 
                         })
 
-            });
+                });
 
         });
 

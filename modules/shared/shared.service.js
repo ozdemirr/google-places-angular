@@ -25,19 +25,19 @@ shared.factory('sharedService', ['$http','$q', '$rootScope', function($http, $q,
             + '&url=' + encodeURIComponent(endpoint)
             + '&format=json';
 
-            var deferred = $q.defer();
-            $http.get(yql)
-                .then(function(response) {
+        var deferred = $q.defer();
+        $http.get(yql)
+            .then(function(response) {
 
-                    if(response.data.query.results.json.status == "OK"){
-                        deferred.resolve(response.data.query.results.json.results);
-                    }else{
-                        deferred.reject();
-                    }
+                if(response.data.query.results.json.status == "OK"){
+                    deferred.resolve(response.data.query.results.json.results);
+                }else{
+                    deferred.reject();
+                }
 
-                });
-            return deferred.promise;
-        };
+            });
+        return deferred.promise;
+    };
 
     sharedService.getGeoCodeFromFoursquare = function(address){
 
