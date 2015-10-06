@@ -51,6 +51,8 @@
 
                     <div ng-if="singleResults.length > 0">
 
+                        <h1>Google Place Results</h1>
+
                         <div class="row">
 
                             <div class="col-md-3" ng-repeat="result in singleResults">
@@ -60,7 +62,30 @@
                                         <h3>{{result.name}}</h3>
                                         <p>{{result.formatted_address}}</p>
                                         <p>latitude,longitude : {{result.geometry.location.lat}}, {{result.geometry.location.lng}}</p>
-                                        <p><a ng-click="showOnMap(result.geometry.location.lat,result.geometry.location.lng)" class="btn btn-primary" role="button">Harita' da Göster</a></p>
+                                        <p><a ng-click="showOnMap(result.geometry.location.lat,result.geometry.location.lng)" class="btn btn-primary" role="button">Show On Map</a></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div ng-if="foursquareSingleResults.length > 0">
+
+                        <h1>Foursquare Explore Results</h1>
+
+                        <div class="row">
+
+                            <div class="col-md-3" ng-repeat="result in foursquareSingleResults">
+                                <div class="thumbnail">
+                                    <img ng-src="{{result.imageLink}}">
+                                    <div class="caption">
+                                        <h3>{{result.name}}</h3>
+                                        <p><span ng-repeat-start="addresspart in result.location.formattedAddress track by $index">{{addresspart}}</span> <span ng-repeat-end> </span></p>
+                                        <p>latitude,longitude : {{result.location.lat}}, {{result.location.lng}}</p>
+                                        <p><a ng-click="showOnMap(result.location.lat,result.location.lng)" class="btn btn-primary" role="button">Show On Map</a></p>
                                     </div>
                                 </div>
                             </div>
@@ -86,14 +111,18 @@
                         <button type="button" class="btn btn-success" ng-click="getMultiplyAddress()">Get</button>
                     </div>
 
-                    <div class="form-group" ng-show="multiplyResults[0]">
-                        <button type="button" class="btn btn-info" ng-csv="multiplyAddressesJsonData" field-separator=","
-                                filename="adresler.csv" csv-header="['adres_ismi', 'ilk_sonuc', 'alternatif_sonuc']">CSV' yi İndir</button>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-success" ng-click="makeCSV()" ng-if="multiplyAddressesJsonData">Prepare CSV</button>
+                    </div>
+
+                    <div class="form-group" ng-show="multiplyDataReady[0]">
+                        <button type="button" class="btn btn-info" ng-csv="multiplyDataReady" field-separator=","
+                                filename="adresses.csv" csv-header="['address', 'google_result', 'foursquare_result']">CSV' yi İndir</button>
                     </div>
 
                     <div class="row" ng-repeat="resultLine in multiplyResults" ng-if="multiplyResultsListing">
 
-                        <h1>Results for "{{multiplyAddressesArray[$index]}}"</h1>
+                        <h1>Results for "{{resultLine[0].name}}" on Google Place</h1>
 
                         <div class="col-md-3" ng-repeat="result in resultLine">
                             <div class="thumbnail">
@@ -109,10 +138,28 @@
 
                     </div>
 
+                    <div class="row" ng-repeat="resultLine in foursquareMultiplyResults" ng-if="multiplyResultsListing">
+
+                        <h1>Results for "{{resultLine[0].name}}" on Foursquare Explore</h1>
+
+                        <div class="col-md-3" ng-repeat="result in resultLine">
+                            <div class="thumbnail">
+                                <img ng-src="{{result.imageLink}}">
+                                <div class="caption">
+                                    <h3>{{result.name}}</h3>
+                                    <p><span ng-repeat-start="addresspart in result.location.formattedAddress track by $index">{{addresspart}}</span> <span ng-repeat-end> </span></p>
+                                    <p>latitude,longitude : {{result.location.lat}}, {{result.location.lng}}</p>
+                                    <p><a ng-click="showOnMap(result.location.lat,result.location.lng)" class="btn btn-primary" role="button">Show On Map</a></p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </tab>
 
 
-                <tab heading="From CSV File" select="tabsData.tab = 3;removeMap()">
+                <tab heading="From CSV File" select="tabsData.tab = 3;removeMap()" ng-if="false">
 
                     <div class="form-group">
                         <label class="col-sm-2 control-label">CSV Dosyası</label>
